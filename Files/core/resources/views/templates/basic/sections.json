@@ -1,0 +1,431 @@
+{
+    "banner": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Banner Section",
+        "content": {
+            "images": {
+                "image": {
+                    "size": "1140x970"
+                },
+                "shape": {
+                    "size": "475x630"
+                }
+            },
+            "heading": "text",
+            "subheading": "text",
+            "subtitle": "text",
+            "feature_one": "text",
+            "feature_two": "text",
+            "feature_three": "text"
+        }
+    },
+    "breadcrumb": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Breadcrumb Image",
+        "content": {
+            "images": {
+                "image": {
+                    "size": "1920x205"
+                }
+            }
+        }
+    },
+
+    "client": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Client Section",
+        "element": {
+            "images": {
+                "image": {
+                    "size": "290x100"
+                }
+            },
+            "modal": true
+        }
+    },
+
+    "category": {
+        "builder": true,
+        "name": "Category Section"
+    },
+
+    "how_work": {
+        "builder": true,
+        "name": "How To Work Section",
+
+        "content": {
+            "heading": "text",
+            "subheading": "text"
+        },
+        "element": {
+            "icon": "icon",
+            "title": "text",
+            "content": "text",
+            "modal": true
+        }
+    },
+
+    "account": {
+        "builder": true,
+        "name": "Account Section",
+        "content": {
+            "images": {
+                "freelancer": {
+                    "size": "530x490"
+                },
+                "buyer": {
+                    "size": "750x530"
+                }
+            },
+            "freelancer_title": "text",
+            "freelancer_content": "text",
+            "freelancer_button_name": "text",
+
+            "buyer_title": "text",
+            "buyer_content": "text",
+            "buyer_button_name": "text"
+        }
+    },
+
+    "why_choose": {
+        "builder": true,
+        "name": "Why Choose Section",
+        "content": {
+            "heading": "text",
+            "subheading": "text"
+        },
+        "element": {
+            "images": {
+                "image": {
+                    "size": "80x80"
+                }
+            },
+            "title": "text",
+            "content": "text",
+            "modal": true
+        }
+    },
+
+    "find_task": {
+        "builder": true,
+        "name": "Find Job Section",
+        "content": {
+            "images": {
+                "image": {
+                    "size": "1020x1560"
+                },
+                "shape": {
+                    "size": "190x420"
+                }
+            },
+            "subtitle": "text",
+            "heading": "text",
+            "subheading": "text",
+            "button_name": "text"
+        },
+        "element": {
+            "find_step": "text",
+            "modal": true
+        }
+    },
+
+    "facility": {
+        "builder": true,
+        "name": "Facility Section",
+        "content": {
+            "images": {
+                "image": {
+                    "size": "1200x1200"
+                }
+            },
+            "heading": "text",
+            "subheading": "text"
+        },
+        "element": {
+            "title": "text",
+            "content": "textarea",
+            "modal": true
+        }
+    },
+
+    "completion_work": {
+        "builder": true,
+        "name": "Completion Work Section",
+        "content": {
+            "images": {
+                "image": {
+                    "size": "1165x1190"
+                }
+            },
+            "heading": "text",
+            "subheading": "text"
+        },
+        "element": {
+            "done_step": "text",
+            "modal": true
+        }
+    },
+
+    "testimonial": {
+        "builder": true,
+        "name": "Testimonial Section",
+        "content": {
+            "heading": "text",
+            "subheading": "text"
+        },
+        "element": {
+            "images": {
+                "image": {
+                    "size": "140x140"
+                }
+            },
+            "quote": "textarea",
+            "name": "text",
+            "country": "text",
+            "modal": true
+        }
+    },
+
+    "top_freelancer": {
+        "builder": true,
+        "name": "Top Rated Freelancers",
+        "content": {
+            "heading": "text",
+            "subheading": "text"
+        }
+    },
+
+    "counter": {
+        "builder": true,
+        "name": "Counter Section",
+        "no_selection": true,
+        "element": {
+            "icon": "icon",
+            "digit": "text",
+            "content": "text",
+            "modal": true
+        }
+    },
+    "subscribe": {
+        "builder": true,
+        "name": "Subscribe Section",
+        "content": {
+            "images": {
+                "image": {
+                    "size": "1070x930"
+                },
+                "shape": {
+                    "size": "130x290"
+                }
+            },
+            "heading": "text",
+            "subheading": "text"
+        }
+    },
+
+    "about": {
+        "builder": true,
+        "name": "About Us",
+        "content": {
+            "images": {
+                "image": {
+                    "size": "640x880"
+                }
+            },
+            "heading": "text"
+        },
+        "element": {
+          "images": {
+                "image": {
+                    "size": "25x25"
+                }
+            },
+            "title": "text",
+            "content": "text",
+            "modal": true
+        }
+    },
+
+    "policy_pages": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Policy Pages",
+        "hide_builder": true,
+        "element": {
+            "title": "text",
+            "slug": "title",
+            "details": "textarea-nic",
+            "modal": false,
+            "seo": true
+        }
+    },
+
+    "faq": {
+        "builder": true,
+        "name": "FAQ Section",
+        "content": {
+            "heading": "text",
+            "subheading": "text",
+            "images": {
+                "image": {
+                    "size": "840x1140"
+                }
+            }
+        },
+        "element": {
+            "question": "text",
+            "answer": "textarea",
+            "modal": true
+        }
+    },
+
+    "blog": {
+        "builder": true,
+        "name": "Blog Section",
+        "content": {
+            "heading": "text",
+            "subheading": "text"
+        },
+        "element": {
+            "images": {
+                "image": {
+                    "size": "970x600",
+                    "thumb": "485x300"
+                }
+            },
+            "title": "text",
+            "slug": "title",
+            "description": "textarea-nic",
+            "modal": false,
+            "seo": true
+        }
+    },
+
+    "social_icon": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Social Icons",
+        "element": {
+            "title": "text",
+            "social_icon": "icon",
+            "url": "text",
+            "modal": true
+        }
+    },
+
+    "brand": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Brand Section",
+        "content": {
+            "heading": "text"
+        },
+        "element": {
+            "images": {
+                "image": {
+                    "size": "260x60"
+                }
+            },
+            "modal": true
+        }
+    },
+
+    "support": {
+        "builder": true,
+        "name": "Support 24/7 Section",
+        "content": {
+            "images": {
+                "image": {
+                    "size": "550x600"
+                },
+                "shape": {
+                    "size": "545x315"
+                }
+            },
+            "heading": "text",
+            "hotline_number": "text",
+            "hotline_email": "text"
+        }
+    },
+
+    "contact_us": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Contact Us",
+        "content": {
+            "heading": "text",
+            "subheading": "text",
+            "title": "text",
+            "email_address": "text",
+            "contact_number": "text",
+            "contact_details": "text"
+        }
+    },
+
+    "login": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Login Section",
+        "content": {
+            "images": {
+                "image": {
+                    "size": "770x670"
+                }
+            },
+            "heading": "text"
+        }
+    },
+
+    "register": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Register Section",
+        "content": {
+            "images": {
+                "image": {
+                    "size": "770x670"
+                }
+            },
+            "heading": "text"
+        }
+    },
+    "switching_button": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Switching Buttons",
+        "content": {
+            "freelancer_login_button": "text",
+            "buyer_login_button": "text",
+            "freelancer_register_button": "text",
+            "buyer_register_button": "text"
+        }
+    },
+
+    "banned": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Banned Page",
+        "content": {
+            "images": {
+                "image": {
+                    "size": "360x370"
+                }
+            },
+            "heading": "text"
+        }
+    },
+
+    "kyc": {
+        "builder": true,
+        "no_selection": true,
+        "name": "KYC Content",
+        "content": {
+            "required": "text",
+            "pending": "text",
+            "reject": "text"
+        }
+    }
+}

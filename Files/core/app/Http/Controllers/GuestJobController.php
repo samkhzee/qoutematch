@@ -1,0 +1,309 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Constants\Status;
+use App\Lib\FormProcessor;
+use App\Lib\GuestJobPostService;
+use App\Lib\RequestFormService;
+use App\Models\Buyer;
+use App\Models\Category;
+use App\Models\Job;
+use App\Models\Skill;
+use App\Rules\FileTypeValidate;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
+use Inertia\Inertia;
+
+class GuestJobController extends Controller
+{
+    public function details()
+    {
+        if ($redirect = GuestJobPostService::redirectIfAuthenticatedBuyer()) {
+            return $redirect;
+        }
+
+        $draft = GuestJobPostService::draft();
+        $categories = Category::active()->with(['subcategories' => fn ($q) => $q->active(), 'requestForm'])->get();
+        $skills = Skill::active()->orderBy('name')->get(['id', 'name', 'category_id']);
+
+        return Inertia::render('Public/PostJob/Index', [
+            'pageTitle' => 'Post a Job',
+            'guestMode' => true,
+            'jobPostRoutes' => GuestJobPostService::routes(),
+            'draft' => $draft,
+            'wizardPhase' => GuestJobPostService::wizardPhase(),
+            'categories' => self::categoriesPayload($categories),
+            'categoryForms' => self::categoryFormsMap($categories, $draft),
+            'skills' => $skills,
+            'currencyText' => gs('cur_text'),
+        ]);
+    }
+
+    public function storeDetails(Request $request)
+    {
+        if ($redirect = GuestJobPostService::redirectIfAuthenticatedBuyer()) {
+            return $redirect;
+        }
+
+        $base = \Illuminate\Support\Str::slug(
+            filled($request->slug) ? $request->slug : ($request->title ?? 'job')
+        ) ?: 'job';
+        $slug = $base;
+        $i = 1;
+        while (Job::where('slug', $slug)->exists()) {
+            $slug = $base . '-' . $i;
+            $i++;
+        }
+        $request->merge(['slug' => $slug]);
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'slug' => ['required', 'string', 'max:255', Rule::unique('jobs', 'slug')],
+            'category_id' => ['required', 'integer', 'gt:0', Rule::exists('categories', 'id')->where(fn ($query) => $query->where('status', Status::YES))],
+            'subcategory_id' => ['required', 'integer', 'gt:0', Rule::exists('subcategories', 'id')->where(fn ($query) => $query->where('status', Status::YES))],
+            'description' => 'required|string',
+        ]);
+
+        $category = Category::active()->with('requestForm')->findOrFail($request->category_id);
+        $existingRequestData = GuestJobPostService::draft()['request_data'] ?? null;
+
+        if ($category->requestForm) {
+            $formProcessor = new FormProcessor();
+            $dynamicRules = $formProcessor->valueValidation($category->requestForm->form_data);
+            $existingByLabel = collect($existingRequestData ?? [])->keyBy('label');
+
+            foreach ($category->requestForm->form_data as $field) {
+                if ($field->type === 'file' && ($existingByLabel->get($field->label)['value'] ?? null)) {
+                    $dynamicRules[$field->label] = ['nullable', new FileTypeValidate(explode(',', $field->extensions))];
+                }
+            }
+
+            $request->validate($dynamicRules);
+        }
+
+        $requestData = null;
+        if ($category->requestForm) {
+            $requestData = RequestFormService::processSubmission(
+                $request,
+                $category->requestForm->form_data,
+                $existingRequestData
+            );
+        }
+
+        GuestJobPostService::putDraft([
+            'title' => $request->title,
+            'slug' => $request->slug,
+            'category_id' => (int) $request->category_id,
+            'subcategory_id' => (int) $request->subcategory_id,
+            'description' => $request->description,
+            'request_data' => $requestData,
+        ]);
+
+        return redirect()->route('post.job.details');
+    }
+
+    public function preferences()
+    {
+        if ($redirect = GuestJobPostService::redirectIfAuthenticatedBuyer()) {
+            return $redirect;
+        }
+
+        return redirect()->route('post.job.details');
+    }
+
+    public function storePreferences(Request $request)
+    {
+        if ($redirect = GuestJobPostService::redirectIfAuthenticatedBuyer()) {
+            return $redirect;
+        }
+
+        if ($redirect = GuestJobPostService::guardStep(2)) {
+            return $redirect;
+        }
+
+        $request->validate([
+            'skill_ids' => 'required|array',
+            'skill_ids.*' => 'exists:skills,id',
+            'project_scope' => 'required|in:1,2,3',
+            'job_longevity' => 'required|in:1,2,3,4',
+            'skill_level' => 'required|in:1,2,3,4',
+        ]);
+
+        $draft = GuestJobPostService::draft();
+        $skillIds = Skill::active()
+            ->forCategory($draft['category_id'] ?? null)
+            ->whereIn('id', $request->skill_ids)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        if (empty($skillIds)) {
+            return back()->withErrors([
+                'skill_ids' => 'Please choose at least one skill that matches this job category.',
+            ])->withInput();
+        }
+
+        GuestJobPostService::putDraft([
+            'skill_ids' => $skillIds,
+            'project_scope' => (int) $request->project_scope,
+            'job_longevity' => (int) $request->job_longevity,
+            'skill_level' => (int) $request->skill_level,
+        ]);
+
+        return redirect()->route('post.job.details');
+    }
+
+    public function budget()
+    {
+        if ($redirect = GuestJobPostService::redirectIfAuthenticatedBuyer()) {
+            return $redirect;
+        }
+
+        return redirect()->route('post.job.details');
+    }
+
+    public function storeBudget(Request $request)
+    {
+        if ($redirect = GuestJobPostService::redirectIfAuthenticatedBuyer()) {
+            return $redirect;
+        }
+
+        if ($redirect = GuestJobPostService::guardStep(3)) {
+            return $redirect;
+        }
+
+        $request->validate([
+            'budget' => 'required|numeric|gt:0',
+            'custom_budget' => 'required|in:0,1',
+            'deadline' => 'required|date|after_or_equal:today',
+            'questions' => 'nullable|array|max:5',
+            'questions.*' => 'nullable|string',
+            'status' => 'required|in:0,1',
+            'firstname' => 'required|string|max:40',
+            'lastname' => 'required|string|max:40',
+            'email' => 'required|string|email|max:100',
+            'phone' => 'nullable|string|max:30',
+        ]);
+
+        $email = strtolower(trim($request->email));
+        if (Buyer::where('email', $email)->exists()) {
+            return back()->withErrors([
+                'email' => 'An account with this email already exists. Please log in as a customer to post your job.',
+            ])->withInput();
+        }
+
+        try {
+            $buyer = GuestJobPostService::createBuyerFromContact([
+                'firstname' => $request->firstname,
+                'lastname' => $request->lastname,
+                'email' => $email,
+                'phone' => $request->phone,
+            ]);
+        } catch (\RuntimeException) {
+            return back()->withErrors([
+                'email' => 'An account with this email already exists. Please log in as a customer to post your job.',
+            ])->withInput();
+        }
+
+        $job = GuestJobPostService::publishDraft($buyer, [
+            'budget' => $request->budget,
+            'custom_budget' => $request->custom_budget,
+            'deadline' => $request->deadline,
+            'questions' => array_values(array_filter($request->questions ?? [])),
+            'status' => $request->status,
+        ]);
+
+        Auth::guard('buyer')->login($buyer);
+
+        session([
+            'post_job_success' => [
+                'job_id' => $job->id,
+                'title' => $job->title,
+                'published' => (int) $job->status === Status::JOB_PUBLISH,
+            ],
+        ]);
+
+        return redirect()->route('post.job.success');
+    }
+
+    public function success()
+    {
+        $payload = session('post_job_success');
+
+        if (! $payload) {
+            return Auth::guard('buyer')->check()
+                ? redirect()->route('buyer.job.post.index')
+                : redirect()->route('post.job.details');
+        }
+
+        session()->forget('post_job_success');
+
+        return Inertia::render('Public/PostJob/Success', [
+            'pageTitle' => 'Job Posted Successfully',
+            'job' => $payload,
+            'buyerLoggedIn' => Auth::guard('buyer')->check(),
+        ]);
+    }
+
+    public function checkSlug()
+    {
+        $exists = Job::where('slug', request('slug'))->exists();
+
+        return response()->json(['exists' => $exists]);
+    }
+
+    private static function hasDetailsStep(array $draft): bool
+    {
+        return filled($draft['title'] ?? null);
+    }
+
+    private static function jobFromDraft(array $draft): array
+    {
+        return [
+            'id' => null,
+            'title' => $draft['title'] ?? '',
+            'slug' => $draft['slug'] ?? '',
+            'category_id' => $draft['category_id'] ?? '',
+            'subcategory_id' => $draft['subcategory_id'] ?? '',
+            'description' => $draft['description'] ?? '',
+            'skill_ids' => $draft['skill_ids'] ?? [],
+            'project_scope' => $draft['project_scope'] ?? '',
+            'job_longevity' => $draft['job_longevity'] ?? '',
+            'skill_level' => $draft['skill_level'] ?? '',
+        ];
+    }
+
+    private static function categoriesPayload($categories): array
+    {
+        return $categories->map(fn ($category) => [
+            'id' => $category->id,
+            'name' => $category->name,
+            'subcategories' => $category->subcategories->map(fn ($sub) => [
+                'id' => $sub->id,
+                'name' => $sub->name,
+            ])->values()->all(),
+        ])->values()->all();
+    }
+
+    private static function categoryFormsMap($categories, array $draft): array
+    {
+        $saved = $draft['request_data'] ?? null;
+
+        return $categories->mapWithKeys(function ($category) use ($saved, $draft) {
+            if (! $category->requestForm) {
+                return [$category->id => []];
+            }
+
+            $categorySaved = ((int) ($draft['category_id'] ?? 0) === (int) $category->id) ? $saved : null;
+
+            return [
+                $category->id => RequestFormService::fieldsForFrontend(
+                    $category->requestForm->form_data,
+                    $categorySaved
+                ),
+            ];
+        })->all();
+    }
+}

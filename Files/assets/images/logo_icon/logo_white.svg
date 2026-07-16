@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 72" fill="none" role="img" aria-label="QuoteMatch">
+  <defs>
+    <mask id="qm-icon-cutout">
+      <rect width="72" height="72" fill="#fff"/>
+      <path d="M24.5 37.8 33.4 46.7 49.6 28.8" stroke="#000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M17 21c0-2 1.5-3.5 3.5-3.5 1.2 0 2.2.5 2.8 1.3" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M17 24.5c0-2 1.5-3.5 3.5-3.5" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M51 50.5c0 2-1.5 3.5-3.5 3.5-1.2 0-2.2-.5-2.8-1.3" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M51 47c0 2-1.5 3.5-3.5 3.5" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"/>
+    </mask>
+  </defs>
+
+  <circle cx="36" cy="36" r="28" fill="#FFFFFF" mask="url(#qm-icon-cutout)"/>
+
+  <text x="78" y="38" fill="#FFFFFF" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="28" font-weight="700">QuoteMatch</text>
+  <text x="80" y="56" fill="#FFFFFF" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="9.5" font-weight="600" letter-spacing="2.4">COMPARE TRUSTED QUOTES</text>
+</svg>

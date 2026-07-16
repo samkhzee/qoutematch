@@ -1,0 +1,86 @@
+﻿QuoteMatch (Olance) - Windows / Laragon Setup
+============================================
+
+This package includes the application files, pre-built frontend (build/), PHP vendor (core/vendor), and a MySQL dump (database/olance.sql).
+
+1) Copy the Files folder
+------------------------
+Copy this entire "Files" folder into your Laragon web root, for example:
+  C:\laragon\www\quotematch\
+(or rename the folder as you prefer; paths below assume the folder is named Files.)
+
+2) MySQL database
+-----------------
+- Start MySQL in Laragon.
+- Create database: olance (utf8mb4_unicode_ci), or import the dump which creates it.
+- Import:
+    mysql -u root olance < database\olance.sql
+  Or use HeidiSQL / phpMyAdmin: select database olance (or run import on the dump file).
+
+The dump file includes CREATE DATABASE and USE olance.
+
+3) Environment (.env)
+---------------------
+Copy or edit: Files\core\.env
+
+Minimum settings (Laragon defaults):
+  DB_CONNECTION=mysql
+  DB_HOST=127.0.0.1
+  DB_PORT=3306
+  DB_DATABASE=olance
+  DB_USERNAME=root
+  DB_PASSWORD=
+
+Set APP_URL to your local URL, for example:
+  APP_URL=http://quotematch.test
+
+If APP_KEY is empty, from Files\core run:
+  php artisan key:generate
+
+4) Laravel storage link
+-----------------------
+From Files\core:
+  php artisan storage:link
+
+5) Writable directories
+-----------------------
+Ensure these are writable by the web server user:
+  Files\core\storage
+  Files\core\bootstrap\cache
+
+On Windows with Laragon this is usually fine; on Linux/macOS use chmod/chown as needed.
+
+6) Dependencies (optional)
+---------------------------
+vendor/ is included so Composer is not required for a quick start.
+
+If vendor is missing or you need to refresh:
+  cd Files\core
+  composer install
+
+Frontend is already built in Files\build. Rebuild only if you change assets:
+  cd Files\core
+  npm install
+  npm run build
+
+7) Web server / document root
+-----------------------------
+Point your site document root to the Files folder (where index.php lives).
+
+Laragon: create a virtual host whose root is ...\Files (not ...\Files\core).
+
+Alternative for testing:
+  cd Files\core
+  php artisan serve
+  Then open the URL shown (may need APP_URL adjusted).
+
+8) Installer (if used)
+------------------------
+If your deployment uses the install wizard, see the install\ folder and follow any on-screen steps after DB import and .env configuration.
+
+9) Troubleshooting
+------------------
+- 500 errors: check storage and bootstrap\cache permissions; run php artisan config:clear.
+- Blank CSS: confirm Files\build exists and document root is Files, not core.
+- DB errors: verify .env credentials and that olance.sql imported successfully.
+

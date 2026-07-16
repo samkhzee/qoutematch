@@ -1,0 +1,37 @@
+﻿# Archives (redundant; source is in Files/)
+*.zip
+
+# Secrets / local env
+**/.env
+!**/.env.example
+
+# Dependencies (install via composer/npm)
+**/node_modules/
+**/vendor/
+
+# Laravel runtime / caches
+**/storage/*.key
+**/storage/logs/*
+!**/storage/logs/.gitignore
+**/storage/framework/cache/data/*
+**/storage/framework/sessions/*
+**/storage/framework/views/*
+**/bootstrap/cache/*.php
+!**/bootstrap/cache/.gitignore
+
+# IDE / OS
+.idea/
+.vscode/
+.fleet/
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log
+yarn-error.log
+
+# PHPUnit / Homestead
+.phpunit.cache
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json

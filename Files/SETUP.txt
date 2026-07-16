@@ -50,11 +50,10 @@ Ensure these are writable by the web server user:
 
 On Windows with Laragon this is usually fine; on Linux/macOS use chmod/chown as needed.
 
-6) Dependencies (optional)
----------------------------
-vendor/ is included so Composer is not required for a quick start.
+6) Dependencies
+----------------
+From GitHub clones, vendor/ is NOT included — you must run Composer:
 
-If vendor is missing or you need to refresh:
   cd Files\core
   composer install
 

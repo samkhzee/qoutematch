@@ -222,6 +222,7 @@ class GuestJobController extends Controller
                 'job_id' => $job->id,
                 'title' => $job->title,
                 'published' => (int) $job->status === Status::JOB_PUBLISH,
+                'approved' => (int) $job->is_approved === Status::JOB_APPROVED,
             ],
         ]);
 

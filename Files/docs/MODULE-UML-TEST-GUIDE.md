@@ -1,323 +1,186 @@
-# QuoteMatch — Module UML & Test Guide
+# QuoteMatch — Complete Blueprint Diagrams & Test Guide
 
-Use this with the interactive canvas in Cursor, or paste Mermaid into any viewer (GitHub, mermaid.live).
+Aligned to: **Complete Blueprint for Service and Product Comparison Website** (38 pages).
 
-Base URL (local): `http://127.0.0.1:8000`
+Interactive SVG diagrams (no Mermaid): open  
+`Files/docs/module-diagrams.html` in any browser.
+
+**Naming map (Blueprint → App)**
+
+| Blueprint | App (Olance/QuoteMatch) |
+|-----------|-------------------------|
+| Customer | Buyer |
+| Service Provider | Freelancer / User |
+| Request | Job |
+| Quote | Bid |
+| Accept quote | Hire talent |
 
 ---
 
-## 1. System overview (component)
+## §1–3 Overview
 
-```mermaid
-flowchart LR
-  Guest --> Job
-  Buyer --> Job
-  Admin --> Job
-  Job --> Freelancer
-  Freelancer --> Bid
-  Bid --> Buyer
-  Buyer --> Project
-  Bid --> Project
-  Payments --> Project
-  Buyer --> Chat
-  Freelancer --> Chat
-  Project --> Dispute
-  Admin --> Dispute
+```
+Customer → Request → Providers → Quotes → Compare → Accept → Review
+                ↑
+              Admin
 ```
 
-| Prefix | Actor | Route file |
-|--------|--------|------------|
-| `/` | Public / Guest | `routes/web.php` |
-| `/post-job/` | Guest buyer | `routes/web.php` |
-| `/buyer/` | Buyer | `routes/buyer.php` |
-| `/freelancer/` | Provider | `routes/user.php` |
-| `/admin/` | Admin | `routes/admin.php` |
-| `/ipn/` | Gateways | `routes/ipn.php` |
+Launch categories: **Builders & Home Improvement** · **Freight Forwarding & Logistics**
 
 ---
 
-## 2. Core marketplace flow (activity)
+## §4 User types
 
-```mermaid
-flowchart LR
-  Post[Post job] --> Approve[Admin approve]
-  Approve --> Bid[Provider bids]
-  Bid --> Hire[Buyer hires]
-  Hire --> Upload[Upload work]
-  Upload --> Done[Complete + pay]
-```
-
-### Entity states to verify
-
-| Entity | States |
-|--------|--------|
-| Job | Draft → Pending → Approved → Processing |
-| Bid | Pending → Shortlisted / Rejected / Withdrawn / Accepted |
-| Project | Running → Buyer review → Completed \| Reported |
-| Dispute | Open → In review → Resolved |
-| TrialTask | Draft → Pending → Accepted → Submitted → Finished |
-
-### Priority E2E order
-
-1. Post → Approve → Bid → Hire → Deliver → Complete  
-2. Escrow: deposit → hire → release  
-3. Trial task full cycle  
-4. Lead credits buy → deduct → block at zero  
-5. Project report → admin dispute resolve  
-6. Verification upload → admin approve → badge  
-7. Dual auth sessions do not mix  
-8. Support ticket create → admin reply  
+- **Customer** — post request, compare quotes, message, accept, review  
+- **Provider** — profile, docs, matching leads, quote, message, monetisation  
+- **Admin** — approve providers, categories, disputes, payments, verify docs, CMS, analytics  
+- **Sales Agent** — optional future role  
 
 ---
 
-## 3. Per-module UML + QA
+## §7 Main customer workflow (primary test path)
 
-### Public site
+1. Visit website → Get Quotes  
+2. Select category / subcategory  
+3. Complete **structured form** (fields change by category)  
+4. Create account  
+5. Request goes **Live** to matching providers  
+6. Providers submit quotes  
+7. **Compare quotes** side-by-side  
+8. Shortlist  
+9. Message providers  
+10. Accept one quote  
+11. Job completed → leave review  
 
-```mermaid
-flowchart TD
-  Visitor --> Home["/"]
-  Home --> Jobs["/freelance-jobs"]
-  Home --> Talents["/talents"]
-  Jobs --> JobDetail["/explore-job/{slug}"]
-```
-
-**Test:** home sections; job list/filter; job detail; talents; contact/cookie pages.
-
----
-
-### Guest job post
-
-```mermaid
-flowchart TD
-  Guest --> Wizard["/post-job"]
-  Wizard --> Prefs[Preferences]
-  Prefs --> Budget[Budget]
-  Budget --> Success[Success + account]
-```
-
-**Test:** logout → Post Job at 0%; category filters skills; unique slug; logged-in buyer redirected to `/buyer/job/post/*`.
+**Compare columns (§9):** price, provider, rating, verification, insurance, availability, location, response time, validity, inclusions/exclusions, payment terms  
 
 ---
 
-### Buyer portal
+## §8 Main provider workflow
 
-```mermaid
-flowchart TD
-  Login["/buyer/login"] --> Dash["/buyer/dashboard"]
-  Dash --> Post["Post job wizard"]
-  Dash --> Bids[View bids]
-  Bids --> Hire[Hire]
-  Hire --> Project[Buyer project]
-  Dash --> Deposit[Deposit]
-```
-
-**Test:** wizard (no slug); hire path; deposit; complete project; bid bell notifications.
+1. Register (business details, categories, service areas)  
+2. Complete profile (logo, portfolio, insurance, certificates, licences)  
+3. Admin verifies (Not verified → … → Fully verified)  
+4. View **matching** leads only  
+5. Submit structured quote  
+6. Communicate / revise  
+7. Won or lost  
 
 ---
 
-### Freelancer portal
+## §43 Builder journey (example)
 
-```mermaid
-flowchart TD
-  Login["/freelancer/login"] --> Dash["/freelancer/dashboard"]
-  Dash --> Browse[Browse jobs]
-  Browse --> Bid[Submit quote]
-  Bid --> Credits[Lead credit deduct]
-  Hire --> Upload["POST /project/upload/{id}"]
-```
+Get quotes → Kitchen fitting → Postcode + photos + start date → Submit → 3 quotes → Compare → Message 2 → Accept 1 → Complete → Review  
 
-**Test:** approved to bid; credit deduct; upload URL is `upload` not `upload-form`.
+## §44 Freight journey (example)
+
+Compare freight → Sea freight China–UK → Origin/dest/dims → Invoice + packing list → Customs + tail lift → Quotes → Compare costs/transit → Accept → Review  
 
 ---
 
-### Admin panel
+## §6 Core modules
 
-```mermaid
-flowchart TD
-  Admin --> Jobs[Approve jobs]
-  Admin --> Verify[Provider verifications]
-  Admin --> Disputes[Resolve disputes]
-  Admin --> Money[Deposits / withdrawals]
-  Admin --> Skills[Skills + category_id]
-```
-
-**Test:** pending job approve; verification queue; dispute resolve; skill category binding.
+| Module | Must include |
+|--------|----------------|
+| Public | Home, how it works, categories, pricing, auth, legal pages |
+| Customer dash | Post, active/draft, quotes (received/shortlisted/accepted), messages, files, reviews, settings, notifications |
+| Provider dash | Profile, verification, categories, areas, leads, quotes, won/lost, messages, reviews, credits/subscription, documents |
+| Admin dash | Users, provider approval, categories, requests, quotes, reviews, payments, subscriptions, credits, disputes, CMS, reports |
 
 ---
 
-### Auth (3 guards)
+## §24 Statuses (QA checkpoints)
 
-```mermaid
-flowchart LR
-  Guest --> BuyerGuard[Buyer]
-  Guest --> UserGuard[Freelancer]
-  Guest --> AdminGuard[Admin]
-```
+**Request:** Draft → Pending review → Live → Paused / Closed / Quote accepted → Completed / Cancelled / Expired  
 
-**Test:** register + verify each; sessions do not cross; forgot password each portal.
+**Quote:** Submitted → Viewed → Shortlisted / Revised → Accepted / Rejected / Withdrawn / Expired  
+
+**Provider:** Incomplete profile → Pending approval → Active / Suspended / Rejected  
 
 ---
 
-### Payments
+## §13 Verification badges
 
-```mermaid
-flowchart LR
-  Deposit --> Balance
-  Hire --> Escrow
-  Complete --> Release
-  Withdraw --> AdminApprove
-```
+Email · Phone · Company · Insurance · ID · Address · Licence · Fully verified  
 
-**Test:** deposit balance; hire escrow; complete release; withdraw approval; manual gateway locally.
+Document statuses: Pending → Approved / Rejected / Expired  
 
 ---
 
-### Chat
+## §14 Reviews
 
-```mermaid
-flowchart LR
-  Buyer <--> Conversation
-  Freelancer <--> Conversation
-```
-
-**Test:** open from bids; send both sides; unread badge; toast when not on chat page.
+Only after quote accepted or job completed.  
+Ratings: overall, price, communication, quality, timeliness, recommend + text/photos.  
+Admin: hide abusive, mark verified, investigate disputes.  
 
 ---
 
-### Bids / quotes
+## §15–16 Messaging & notifications
 
-```mermaid
-flowchart TD
-  Freelancer -->|BID_PLACED| Buyer
-  Buyer -->|hire / reject| Bid
-  Freelancer -->|BID_WITHRAWN| Buyer
-```
-
-**Test:** place → notify; update within limit; withdraw notify; hire rejects others.
+In-platform chat + files. Hide contact details until quote/lead/accept rules met.  
+Notify: new quote, matching lead, shortlist, accept, messages, doc approval, disputes.  
 
 ---
 
-### Projects
+## §17 Monetisation (MVP)
 
-```mermaid
-stateDiagram-v2
-  [*] --> Running: hire
-  Running --> BuyerReview: upload
-  BuyerReview --> Completed: buyer complete
-  Running --> Reported: report
-  BuyerReview --> Reported: report
-```
-
-**Test:** RUNNING → upload → BUYER_REVIEW → COMPLETED + pay; report creates dispute.
+Customer side **free**. First version: lead credits **or** subscription (after beta).  
+Also possible later: commission, featured listings, verification fee.  
 
 ---
 
-### Disputes
+## §25 Matching
 
-```mermaid
-flowchart LR
-  Report --> Open
-  Open --> InReview
-  InReview --> Resolved
-```
+Provider sees request if: active · covers category · covers location/route · approved · has credits (if required).  
 
-**Test:** report with type/reason; admin in-review → resolve; parties see outcome.
+Builders: postcode radius + trade. Freight: origin/dest + mode + customs.  
 
 ---
 
-### Notifications
+## §31 Disputes
 
-```mermaid
-flowchart TD
-  Event -->|notify| Log[notification_logs]
-  Log --> Bell[Header unread]
-  Bell --> Index[Mark read on open]
-```
-
-**Test:** new bid badge; mark read; templates; withdraw uses `BID_WITHRAWN`.
+Report: fake quote, no response, bad behaviour, wrong info, payment, review dispute, fraud.  
+Admin: open case, notes, evidence, suspend, hide review, resolve.  
 
 ---
 
-### Verification badges
+## §18 / §39 MVP acceptance criteria
 
-```mermaid
-flowchart LR
-  Upload --> Pending
-  Pending --> Approved
-  Approved --> PublicBadge
-```
+- [ ] Customer registers and posts request  
+- [ ] Provider registers and completes profile  
+- [ ] Admin approves provider  
+- [ ] Provider sees matching requests and submits quote  
+- [ ] Customer compares, messages, accepts  
+- [ ] Customer leaves review  
+- [ ] Admin manages categories, users, requests, quotes, reviews  
+- [ ] Mobile responsive · basic notifications · secure files  
 
-**Test:** upload docs; admin approve/reject; badge on public profile.
-
----
-
-### Lead credits
-
-```mermaid
-flowchart LR
-  BuyPackage --> Credits
-  Bid --> Deduct
-  Zero --> BlockBid
-```
-
-**Test:** enable monetisation; buy package; deduct on bid; zero blocks bid.
+MVP should **not** require initially: mobile app, complex escrow, AI, full accounting, video calls, advanced disputes, full commission payments (§18).  
 
 ---
 
-### Trial tasks
+## §38 Milestones
 
-```mermaid
-flowchart LR
-  Create --> Accept
-  Accept --> Upload
-  Upload --> Finish
-```
-
-**Test:** create from bid; accept + upload; complete/cancel; admin view.
-
----
-
-### Support tickets
-
-```mermaid
-flowchart LR
-  UserOpen --> AdminReply
-  AdminReply --> UserReply
-  UserReply --> Close
-```
-
-**Test:** open with attachment; admin reply; close.
+| # | Focus |
+|---|--------|
+| M1 | Planning, roles, categories, wireframes, schema |
+| M2 | Auth, 3 dashboards, post request, submit quote |
+| M3 | Messaging, comparison, shortlist/accept/reject, notifications, uploads |
+| M4 | Profile, docs, verification, reviews, reporting |
+| M5 | QA, security, mobile, UAT, beta |
+| M6 | Stripe, subscriptions, lead credits, featured, billing |
 
 ---
 
-### CMS / frontend
-
-```mermaid
-flowchart LR
-  AdminEdit --> FrontendSections
-  FrontendSections --> PublicHome
-```
-
-**Test:** edit section → home updates; custom page + SEO.
-
----
-
-## Smoke URL cheat sheet
+## App smoke URLs
 
 ```
 /
 /post-job
-/buyer/login
-/buyer/dashboard
-/buyer/job/post/job-details
-/freelancer/login
-/freelancer/dashboard
-/freelancer/bid/list
-/freelancer/project/index
-/admin
-/admin/jobs/pending
-/admin/disputes
-/admin/provider-verifications
-/admin/monetisation
+/buyer/login  /buyer/dashboard  /buyer/job/post/job-details  /buyer/job/post/bids
+/freelancer/login  /freelancer/dashboard  /freelancer/bid/list  /freelancer/verification
+/admin  /admin/jobs/pending  /admin/provider-verifications  /admin/disputes
+/admin/monetisation/settings
 ```
+
+Open diagrams: `Files/docs/module-diagrams.html`

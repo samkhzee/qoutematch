@@ -15,9 +15,11 @@ export default function Success({ pageTitle, job, buyerLoggedIn }) {
                             </div>
                             <h1 className="h3 mb-2">Your job has been posted</h1>
                             <p className="text-muted mb-4">
-                                {job.published
-                                    ? 'Providers can now send you quotes. We have created your customer account so you can manage everything in one place.'
-                                    : 'Your job has been saved as a draft. Log in to your customer dashboard to publish it when you are ready.'}
+                                {!job.published
+                                    ? 'Your job has been saved as a draft. Log in to your customer dashboard to publish it when you are ready.'
+                                    : job.approved
+                                        ? 'Your request is live on Find Jobs. Providers can now send you quotes. Check your email for confirmation and manage everything from your customer account.'
+                                        : 'Thanks — your request is in review. You will get an email as soon as it is approved and appears on Find Jobs. Manage it anytime from your customer account.'}
                             </p>
                             {job.title && (
                                 <p className="mb-4">

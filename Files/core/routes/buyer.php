@@ -98,9 +98,6 @@ Route::middleware('buyer')->name('buyer.')->group(function () {
                 Route::post('bids/{id}/shortlist', 'toggleShortlist')->name('bids.shortlist');
                 Route::post('bids/{id}/reject', 'rejectBid')->name('bids.reject');
                 Route::post('bids/{id}/revision', 'requestRevision')->name('bids.revision');
-                Route::get('bids/sort', 'sortBids')->name('bids.sort');
-
-
             });
 
             //manage Trial Task

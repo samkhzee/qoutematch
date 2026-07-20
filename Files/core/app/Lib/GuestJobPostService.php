@@ -80,14 +80,20 @@ class GuestJobPostService
         $buyer->firstname = trim($contact['firstname']);
         $buyer->lastname = trim($contact['lastname']);
         $buyer->phone = $contact['phone'] ?? null;
+        // Notify/SMS use `mobile`; keep it in sync with the contact phone.
+        if (!empty($contact['phone'])) {
+            $buyer->mobile = preg_replace('/\D+/', '', (string) $contact['phone']) ?: null;
+        }
         $buyer->customer_type = 'individual';
         $buyer->username = suggestUsername($email);
         $buyer->password = Hash::make(Str::random(16));
         $buyer->status = Status::USER_ACTIVE;
         $buyer->profile_complete = Status::YES;
         $buyer->kv = gs('kv') ? Status::NO : Status::YES;
-        $buyer->ev = gs('ev') ? Status::NO : Status::YES;
-        $buyer->sv = gs('sv') ? Status::NO : Status::YES;
+        // Guest posters supply a contact email for this job — mark verified so
+        // approved requests can appear on Find Jobs without a separate EV step.
+        $buyer->ev = Status::YES;
+        $buyer->sv = Status::YES;
         $buyer->ts = Status::DISABLE;
         $buyer->tv = Status::ENABLE;
         $buyer->country_code = $contact['country_code'] ?? 'GB';
@@ -136,6 +142,14 @@ class GuestJobPostService
             $adminNotification->title = 'New job posted by ' . $buyer->fullname;
             $adminNotification->click_url = urlPath('admin.jobs.details', $job->id);
             $adminNotification->save();
+
+            $job->loadMissing('buyer');
+
+            if ((int) $job->is_approved === Status::JOB_APPROVED) {
+                JobPostNotificationService::notifyApproved($job);
+            } else {
+                JobPostNotificationService::notifySubmittedForReview($job);
+            }
         }
 
         self::clearDraft();

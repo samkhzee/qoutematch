@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuoteMatch — Blueprint Diagrams &amp; Test Guide</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --surface: #fff;
+      --border: #d8dee6;
+      --text: #1a2332;
+      --muted: #5c6778;
+      --accent: #1f5f8a;
+      --accent-soft: #e8f1f7;
+      --node-fill: #fff;
+      --node-stroke: #9aa8b8;
+      --arrow: #1f5f8a;
+      --sidebar-w: 280px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: var(--sidebar-w) 1fr;
+      min-height: 100vh;
+    }
+    aside {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 1rem 0;
+      overflow-y: auto;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+    aside h1 {
+      font-size: 0.95rem;
+      margin: 0 1rem 0.4rem;
+      color: var(--accent);
+    }
+    aside p {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin: 0 1rem 1rem;
+    }
+    nav button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      border: 0;
+      background: transparent;
+      padding: 0.4rem 1rem;
+      font: inherit;
+      font-size: 0.82rem;
+      cursor: pointer;
+      color: var(--text);
+    }
+    nav button:hover { background: var(--accent-soft); }
+    nav button.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 600;
+      border-left: 3px solid var(--accent);
+      padding-left: calc(1rem - 3px);
+    }
+    nav .group {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      padding: 0.75rem 1rem 0.25rem;
+    }
+    main { padding: 1.5rem 2rem 3rem; max-width: 1140px; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    h2 { margin: 0 0 0.4rem; font-size: 1.45rem; }
+    .subtitle { color: var(--muted); margin-bottom: 1rem; }
+    .source {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      padding: 0.5rem 0.75rem;
+      background: var(--accent-soft);
+      border-radius: 6px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .card h3 { margin: 0 0 0.75rem; font-size: 0.95rem; }
+    .diagram-wrap {
+      overflow-x: auto;
+      background: #fafbfc;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+    }
+    svg.diagram { display: block; margin: 0 auto; }
+    .node rect {
+      fill: var(--node-fill);
+      stroke: var(--node-stroke);
+      stroke-width: 1.5;
+    }
+    .node.accent rect { fill: var(--accent-soft); stroke: var(--accent); }
+    .node text {
+      fill: var(--text);
+      font-size: 11px;
+      font-family: inherit;
+    }
+    .edge line { stroke: var(--arrow); stroke-width: 1.5; fill: none; }
+    .edge text { fill: var(--muted); font-size: 10px; font-family: inherit; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.45rem 0.6rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #eef2f6; }
+    ol.checklist, ul.checklist { margin: 0; padding-left: 1.25rem; }
+    ol.checklist li, ul.checklist li { margin-bottom: 0.3rem; }
+    .urls code, .pill {
+      display: inline-block;
+      background: #eef2f6;
+      padding: 0.12rem 0.45rem;
+      border-radius: 4px;
+      margin: 0.12rem 0.2rem 0.12rem 0;
+      font-size: 0.8rem;
+    }
+    .badge {
+      display: inline-block;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.72rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      margin-right: 0.3rem;
+    }
+    .cols-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--border); }
+      main { padding: 1rem; }
+      .cols-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside>
+      <h1>Complete Blueprint Diagrams</h1>
+      <p>Matched to <strong>Complete Blueprint for Service and Product Comparison Website</strong>. Open in any browser — SVG only, no Mermaid.</p>
+      <nav id="nav"></nav>
+    </aside>
+    <main id="main"></main>
+  </div>
+
+  <script>
+    const NODE_W = 128;
+    const NODE_H = 36;
+
+    const MODULES = [
+      /* ========== OVERVIEW ========== */
+      {
+        id: "overview",
+        group: "Blueprint overview",
+        title: "1. Project overview",
+        source: "Blueprint §1–3",
+        subtitle: "Comparison + lead-generation platform for services and products",
+        diagram: {
+          nodes: [
+            { id: "c", label: "Customer", x: 0, y: 80 },
+            { id: "req", label: "Request / Job", x: 170, y: 80, accent: true },
+            { id: "p", label: "Providers", x: 340, y: 20 },
+            { id: "q", label: "Quotes", x: 340, y: 80, accent: true },
+            { id: "cmp", label: "Compare", x: 510, y: 80, accent: true },
+            { id: "a", label: "Accept", x: 680, y: 80 },
+            { id: "r", label: "Review", x: 830, y: 80 },
+            { id: "adm", label: "Admin", x: 170, y: 180 },
+          ],
+          edges: [
+            ["c","req"], ["req","p"], ["p","q"], ["q","cmp"], ["cmp","a"], ["a","r"],
+            ["adm","req"], ["adm","p"],
+          ],
+        },
+        notes: [
+          "Launch categories: (1) Builders & home improvement (2) Freight forwarders & logistics",
+          "Positioning: post requirement → compare quotes from verified providers → choose",
+          "Inspired by MyBuilder, Upwork, Checkatrade, Bark + structured price comparison",
+        ],
+      },
+      {
+        id: "roles",
+        group: "Blueprint overview",
+        title: "4. Core user types",
+        source: "Blueprint §4",
+        subtitle: "Customer · Service Provider · Admin · (optional Sales Agent)",
+        diagram: {
+          nodes: [
+            { id: "g", label: "Guest", x: 0, y: 80 },
+            { id: "c", label: "Customer", x: 180, y: 0, accent: true },
+            { id: "p", label: "Provider", x: 180, y: 80, accent: true },
+            { id: "a", label: "Admin", x: 180, y: 160, accent: true },
+            { id: "s", label: "Sales Agent*", x: 360, y: 80 },
+          ],
+          edges: [["g","c"],["g","p"],["g","a"],["a","s"]],
+        },
+        extra: `
+          <div class="cols-2">
+            <div class="card"><h3>Customer can</h3>
+              <ul class="checklist">
+                <li>Post job / requirement / shipment</li>
+                <li>Select category &amp; subcategory</li>
+                <li>Add details, files, budget, location</li>
+                <li>Receive &amp; compare quotes</li>
+                <li>Check profile, reviews, verification</li>
+                <li>Message, shortlist, accept/reject</li>
+                <li>Leave review after completion</li>
+              </ul>
+            </div>
+            <div class="card"><h3>Provider can</h3>
+              <ul class="checklist">
+                <li>Register &amp; professional profile</li>
+                <li>Select categories &amp; locations</li>
+                <li>Upload docs, insurance, licences</li>
+                <li>View matching requests</li>
+                <li>Submit quotes &amp; message</li>
+                <li>Manage leads, jobs, ratings</li>
+                <li>Buy leads / subscriptions (monetisation)</li>
+              </ul>
+            </div>
+          </div>
+          <div class="card"><h3>Admin responsibilities</h3>
+            <p>Approve providers · Categories · Disputes · Quotes/messages · Payments · Verify documents · Fake reviews · Featured listings · CMS · Analytics</p>
+          </div>`,
+      },
+      {
+        id: "categories",
+        group: "Blueprint overview",
+        title: "5. Launch categories",
+        source: "Blueprint §5",
+        subtitle: "Builders &amp; Home Improvement · Freight Forwarding &amp; Logistics",
+        diagram: {
+          nodes: [
+            { id: "plat", label: "Platform", x: 200, y: 0, accent: true },
+            { id: "b", label: "Builders / Home", x: 40, y: 90 },
+            { id: "f", label: "Freight / Logistics", x: 360, y: 90 },
+            { id: "bk", label: "Kitchen fitting…", x: 40, y: 170 },
+            { id: "fs", label: "Sea / Air / Customs…", x: 360, y: 170 },
+          ],
+          edges: [["plat","b"],["plat","f"],["b","bk"],["f","fs"]],
+        },
+        extra: `
+          <div class="cols-2">
+            <div class="card"><h3>Builder request fields (§5.1)</h3>
+              <p>Title · category · property type · postcode · description · budget · start/deadline · planning/building control · materials · uploads · site visit · urgency · contact method</p>
+              <h3 style="margin-top:0.75rem">Builder quote fields</h3>
+              <p>Total · labour · materials · VAT · start · completion · site visit · payment schedule · warranty · inclusions/exclusions · availability · expiry</p>
+            </div>
+            <div class="card"><h3>Freight request fields (§5.2)</h3>
+              <p>Shipment type · origin/destination · Incoterms · packages · dims · weight · commodity · HS code · invoice/packing list · customs · duty · tail lift · insurance · urgency</p>
+              <h3 style="margin-top:0.75rem">Freight quote fields</h3>
+              <p>Freight · clearance · delivery · docs · warehouse · tail lift · transit time · collection/delivery dates · insurance · validity · inclusions/exclusions</p>
+            </div>
+          </div>`,
+      },
+
+      /* ========== MODULES ========== */
+      {
+        id: "modules",
+        group: "Core modules (§6)",
+        title: "6. Core website modules",
+        source: "Blueprint §6",
+        subtitle: "Public · Customer · Provider · Admin",
+        diagram: {
+          nodes: [
+            { id: "pub", label: "Public site", x: 0, y: 60 },
+            { id: "cust", label: "Customer dash", x: 180, y: 0, accent: true },
+            { id: "prov", label: "Provider dash", x: 180, y: 60, accent: true },
+            { id: "adm", label: "Admin dash", x: 180, y: 120, accent: true },
+            { id: "db", label: "Shared data", x: 380, y: 60 },
+          ],
+          edges: [["pub","cust"],["pub","prov"],["pub","adm"],["cust","db"],["prov","db"],["adm","db"]],
+        },
+        extra: `
+          <div class="card"><h3>Public website (§6.1)</h3>
+            <p>Homepage · How it works · Browse categories · For customers · For providers · Pricing · Login/register · Help · About · Contact · Terms · Privacy · Cookie · Trust &amp; safety</p>
+          </div>
+          <div class="cols-2">
+            <div class="card"><h3>Customer dashboard (§6.2)</h3>
+              <ul class="checklist">
+                <li>Post new request</li>
+                <li>Active / draft requests</li>
+                <li>Received / shortlisted / accepted quotes</li>
+                <li>Messages · Uploaded files</li>
+                <li>Reviews to leave</li>
+                <li>Account settings · Notifications</li>
+              </ul>
+            </div>
+            <div class="card"><h3>Provider dashboard (§6.3)</h3>
+              <ul class="checklist">
+                <li>Business profile · Verification</li>
+                <li>Categories · Service areas</li>
+                <li>Matching leads · Submitted quotes</li>
+                <li>Won / lost jobs · Messages · Reviews</li>
+                <li>Subscription / lead credits</li>
+                <li>Documents · Settings · Notifications</li>
+              </ul>
+            </div>
+          </div>
+          <div class="card"><h3>Admin dashboard (§6.4)</h3>
+            <p>Users · Provider approval · Categories · Requests · Quotes · Message monitoring · Reviews · Payments · Subscriptions · Lead credits · Disputes · CMS · Reports · Fraud/spam</p>
+          </div>`,
+      },
+
+      /* ========== CUSTOMER FLOW ========== */
+      {
+        id: "customer-flow",
+        group: "Main workflows",
+        title: "7. Main customer workflow",
+        source: "Blueprint §7 — primary test path",
+        subtitle: "Visit → Category → Form → Account → Live → Quotes → Compare → Shortlist → Message → Accept → Complete → Review",
+        diagram: {
+          nodes: [
+            { id: "s1", label: "1. Visit site", x: 0, y: 20 },
+            { id: "s2", label: "2. Select category", x: 150, y: 20 },
+            { id: "s3", label: "3. Structured form", x: 320, y: 20 },
+            { id: "s4", label: "4. Create account", x: 490, y: 20 },
+            { id: "s5", label: "5. Request live", x: 660, y: 20, accent: true },
+            { id: "s6", label: "6. Quotes arrive", x: 0, y: 110 },
+            { id: "s7", label: "7. Compare quotes", x: 160, y: 110, accent: true },
+            { id: "s8", label: "8. Shortlist", x: 340, y: 110 },
+            { id: "s9", label: "9. Message", x: 490, y: 110 },
+            { id: "s10", label: "10. Accept quote", x: 640, y: 110, accent: true },
+            { id: "s11", label: "11. Complete + review", x: 810, y: 110 },
+          ],
+          edges: [
+            ["s1","s2"],["s2","s3"],["s3","s4"],["s4","s5"],
+            ["s5","s6"],["s6","s7"],["s7","s8"],["s8","s9"],["s9","s10"],["s10","s11"],
+          ],
+        },
+        tests: [
+          "Visit home → Get Quotes / category search",
+          "Select Builders > Kitchen Fitting OR Freight > Customs Clearance",
+          "Form fields change by category (structured)",
+          "Create account (email/password; Google optional)",
+          "Request goes live to matching providers",
+          "Receive multiple quotes",
+          "Compare side-by-side: price, rating, verification, insurance, availability, location, response time, validity, inclusions/exclusions, payment terms",
+          "Shortlist multiple providers",
+          "Message after quote (or after lead purchase per monetisation)",
+          "Accept one quote",
+          "Mark job complete → leave review",
+        ],
+        appMap: "App: Guest /post-job or Buyer /buyer/job/post/* → Admin approve → Freelancer bids → Buyer compare/shortlist/hire → Chat → Project complete → Review",
+      },
+      {
+        id: "provider-flow",
+        group: "Main workflows",
+        title: "8. Main provider workflow",
+        source: "Blueprint §8",
+        subtitle: "Register → Profile → Admin verify → Matching leads → Quote → Message → Win/Lose",
+        diagram: {
+          nodes: [
+            { id: "p1", label: "1. Register", x: 0, y: 40 },
+            { id: "p2", label: "2. Complete profile", x: 150, y: 40 },
+            { id: "p3", label: "3. Admin verifies", x: 330, y: 40, accent: true },
+            { id: "p4", label: "4. Matching leads", x: 500, y: 40 },
+            { id: "p5", label: "5. Submit quote", x: 670, y: 40, accent: true },
+            { id: "p6", label: "6. Communicate", x: 330, y: 130 },
+            { id: "p7", label: "7. Won or lost", x: 500, y: 130 },
+          ],
+          edges: [
+            ["p1","p2"],["p2","p3"],["p3","p4"],["p4","p5"],["p5","p6"],["p6","p7"],
+          ],
+        },
+        tests: [
+          "Register: business name, contact, email, phone, company number, address, website, categories, service areas",
+          "Upload: logo, description, portfolio, insurance, certificates, licences, VAT, company docs",
+          "Admin sets verification: Not verified → Email/Phone/Company/Insurance → Fully verified",
+          "See only leads matching categories + locations",
+          "Submit structured quote form",
+          "Clarify details / revise quote",
+          "Dashboard shows won vs lost status",
+        ],
+        appMap: "App: /freelancer/register → profile → /freelancer/verification → browse jobs → bid → conversation → project won/lost",
+      },
+      {
+        id: "builder-journey",
+        group: "Main workflows",
+        title: "43. Example: Builder journey",
+        source: "Blueprint §43",
+        subtitle: "Kitchen fitting end-to-end",
+        diagram: {
+          nodes: [
+            { id: "b1", label: "Get quotes", x: 0, y: 40 },
+            { id: "b2", label: "Kitchen fitting", x: 140, y: 40 },
+            { id: "b3", label: "Postcode + photos", x: 300, y: 40 },
+            { id: "b4", label: "Submit request", x: 470, y: 40, accent: true },
+            { id: "b5", label: "3 quotes", x: 0, y: 130 },
+            { id: "b6", label: "Compare", x: 140, y: 130, accent: true },
+            { id: "b7", label: "Message 2", x: 280, y: 130 },
+            { id: "b8", label: "Accept 1", x: 420, y: 130, accent: true },
+            { id: "b9", label: "Complete", x: 560, y: 130 },
+            { id: "b10", label: "Review", x: 700, y: 130 },
+          ],
+          edges: [
+            ["b1","b2"],["b2","b3"],["b3","b4"],["b4","b5"],
+            ["b5","b6"],["b6","b7"],["b7","b8"],["b8","b9"],["b9","b10"],
+          ],
+        },
+        tests: [
+          "Click Get quotes for building work",
+          "Select Kitchen fitting",
+          "Enter postcode, description, photos, start date",
+          "Submit → providers quote",
+          "Compare price, start date, reviews, inclusions",
+          "Message two → accept one → complete → review",
+        ],
+      },
+      {
+        id: "freight-journey",
+        group: "Main workflows",
+        title: "44. Example: Freight journey",
+        source: "Blueprint §44",
+        subtitle: "Sea freight China → UK",
+        diagram: {
+          nodes: [
+            { id: "f1", label: "Compare freight", x: 0, y: 40 },
+            { id: "f2", label: "Sea freight", x: 160, y: 40 },
+            { id: "f3", label: "Origin/dest/dims", x: 320, y: 40 },
+            { id: "f4", label: "Invoice + packing", x: 500, y: 40 },
+            { id: "f5", label: "Customs + tail lift", x: 680, y: 40 },
+            { id: "f6", label: "Quotes arrive", x: 160, y: 130 },
+            { id: "f7", label: "Compare costs", x: 340, y: 130, accent: true },
+            { id: "f8", label: "Accept", x: 500, y: 130, accent: true },
+            { id: "f9", label: "Review", x: 640, y: 130 },
+          ],
+          edges: [
+            ["f1","f2"],["f2","f3"],["f3","f4"],["f4","f5"],["f5","f6"],
+            ["f6","f7"],["f7","f8"],["f8","f9"],
+          ],
+        },
+        tests: [
+          "Select Sea freight China to UK",
+          "Enter origin, destination, cartons/pallets, weight, dimensions",
+          "Upload invoice + packing list",
+          "Select customs clearance + tail lift",
+          "Compare freight / clearance / delivery / transit time",
+          "Accept → shipment handled → leave review",
+        ],
+      },
+
+      /* ========== COMPARISON & FORMS ========== */
+      {
+        id: "comparison",
+        group: "Quote & forms",
+        title: "9. Quote comparison system",
+        source: "Blueprint §9, §35",
+        subtitle: "Side-by-side table + sort/filter + actions",
+        diagram: {
+          nodes: [
+            { id: "req", label: "Request summary", x: 200, y: 0 },
+            { id: "cards", label: "Quote cards", x: 40, y: 80 },
+            { id: "table", label: "Comparison table", x: 200, y: 80, accent: true },
+            { id: "sort", label: "Sort / Filter", x: 380, y: 80 },
+            { id: "act", label: "Message / Shortlist / Accept / Reject", x: 160, y: 160, accent: true },
+          ],
+          edges: [["req","cards"],["req","table"],["req","sort"],["table","act"],["cards","act"]],
+        },
+        extra: `
+          <div class="card"><h3>Comparison columns</h3>
+            <p>Provider · Verification · Rating · Reviews · Total price · VAT · Start · Completion · Labour · Materials · Delivery/customs · Warranty · Payment terms · Expiry · Inclusions · Exclusions · Actions</p>
+          </div>
+          <div class="cols-2">
+            <div class="card"><h3>Sort by</h3>
+              <p>Lowest price · Highest rating · Fastest availability · Nearest · Most reviews · Fully verified · Fastest response</p>
+            </div>
+            <div class="card"><h3>Filter by</h3>
+              <p>Price range · Rating · Verified only · Insurance verified · Available this week · Local · VAT registered</p>
+            </div>
+          </div>`,
+        tests: [
+          "Open bids/quotes for a request with 2+ quotes",
+          "See price, rating, verification on each quote",
+          "Shortlist, message, accept, reject actions work",
+        ],
+        appMap: "App: Buyer /buyer/job/post/bids/{id} — shortlist / reject / hire / conversation",
+      },
+      {
+        id: "forms",
+        group: "Quote & forms",
+        title: "10–11. Categories & dynamic forms",
+        source: "Blueprint §10–11, §28",
+        subtitle: "Parent/subcategory + custom request & quote fields + conditional logic",
+        diagram: {
+          nodes: [
+            { id: "cat", label: "Parent category", x: 160, y: 0, accent: true },
+            { id: "sub", label: "Subcategory", x: 160, y: 70 },
+            { id: "rf", label: "Request form fields", x: 20, y: 150 },
+            { id: "qf", label: "Quote form fields", x: 200, y: 150 },
+            { id: "cond", label: "Conditional logic", x: 380, y: 150 },
+          ],
+          edges: [["cat","sub"],["sub","rf"],["sub","qf"],["rf","cond"],["qf","cond"]],
+        },
+        tests: [
+          "Category has parent + subcategory",
+          "Builder form differs from freight form",
+          "Admin can manage categories (activate, SEO, lead price)",
+          "Conditional: customs yes → invoice/HS code; site visit yes → visit date",
+        ],
+        appMap: "App: categories + skills; guest/buyer job wizard filters by category; admin category/skills management",
+      },
+
+      /* ========== TRUST ========== */
+      {
+        id: "verification",
+        group: "Trust systems",
+        title: "13. Verification system",
+        source: "Blueprint §13",
+        subtitle: "Badges + document review statuses",
+        diagram: {
+          nodes: [
+            { id: "up", label: "Upload docs", x: 0, y: 50 },
+            { id: "pen", label: "Pending review", x: 150, y: 50 },
+            { id: "app", label: "Approved", x: 320, y: 10, accent: true },
+            { id: "rej", label: "Rejected", x: 320, y: 90 },
+            { id: "exp", label: "Expired", x: 470, y: 50 },
+            { id: "full", label: "Fully verified", x: 620, y: 10, accent: true },
+          ],
+          edges: [["up","pen"],["pen","app"],["pen","rej"],["app","exp"],["app","full"]],
+        },
+        extra: `
+          <div class="card"><h3>Badges</h3>
+            <p>Email · Phone · Company · Insurance · ID · Address · Licence · Fully verified</p>
+          </div>`,
+        tests: [
+          "Provider uploads insurance/company/licence",
+          "Admin approve or reject",
+          "Badge visible on public profile",
+          "Reminder before expiry (if implemented)",
+        ],
+        appMap: "App: /freelancer/verification · /admin/provider-verifications",
+      },
+      {
+        id: "reviews",
+        group: "Trust systems",
+        title: "14. Reviews and ratings",
+        source: "Blueprint §14",
+        subtitle: "Only after accept / job complete",
+        diagram: {
+          nodes: [
+            { id: "acc", label: "Quote accepted", x: 0, y: 40 },
+            { id: "done", label: "Job completed", x: 160, y: 40, accent: true },
+            { id: "rev", label: "Leave review", x: 330, y: 40, accent: true },
+            { id: "mod", label: "Admin moderate", x: 500, y: 40 },
+          ],
+          edges: [["acc","done"],["done","rev"],["rev","mod"]],
+        },
+        tests: [
+          "Cannot review before accept/complete",
+          "Fields: overall, price accuracy, communication, quality, timeliness, recommend, text, photos",
+          "Admin can hide abusive / mark verified",
+        ],
+        appMap: "App: reviews after project complete (BuyerReview / Review models)",
+      },
+      {
+        id: "messaging",
+        group: "Trust systems",
+        title: "15. Messaging system",
+        source: "Blueprint §15",
+        subtitle: "In-platform chat; hide contact until quote/lead/accept rules met",
+        diagram: {
+          nodes: [
+            { id: "c", label: "Customer", x: 0, y: 50 },
+            { id: "m", label: "Messages + files", x: 160, y: 50, accent: true },
+            { id: "p", label: "Provider", x: 340, y: 50 },
+            { id: "n", label: "Email notify", x: 160, y: 140 },
+          ],
+          edges: [["c","m"],["m","p"],["m","n"]],
+        },
+        tests: [
+          "Chat after quote submitted",
+          "File sharing works",
+          "Email notification on new message",
+          "Contact details hidden until monetisation rules allow",
+        ],
+        appMap: "App: /buyer/conversation · /freelancer/conversation",
+      },
+      {
+        id: "notifications",
+        group: "Trust systems",
+        title: "16. Notifications",
+        source: "Blueprint §16",
+        subtitle: "Email · SMS optional · In-app · Push future",
+        diagram: {
+          nodes: [
+            { id: "ev", label: "Event", x: 0, y: 50 },
+            { id: "ch", label: "Channels", x: 140, y: 50, accent: true },
+            { id: "cu", label: "Customer", x: 300, y: 0 },
+            { id: "pr", label: "Provider", x: 300, y: 50 },
+            { id: "ad", label: "Admin", x: 300, y: 100 },
+          ],
+          edges: [["ev","ch"],["ch","cu"],["ch","pr"],["ch","ad"]],
+        },
+        extra: `
+          <div class="card"><h3>Examples</h3>
+            <p><strong>Customer:</strong> request live · new quote · message · quote revised · leave review</p>
+            <p><strong>Provider:</strong> matching request · quote viewed/shortlisted/accepted · message · doc approved/rejected</p>
+            <p><strong>Admin:</strong> provider awaiting approval · dispute · suspicious activity · reported review</p>
+          </div>`,
+        tests: [
+          "New quote → customer notification (bell/email)",
+          "New matching job → provider (if configured)",
+          "Doc verification result notifies provider",
+        ],
+        appMap: "App: notification_logs + header bell unread APIs",
+      },
+      {
+        id: "disputes",
+        group: "Trust systems",
+        title: "31. Dispute handling",
+        source: "Blueprint §31",
+        subtitle: "Report cases → admin investigate → resolve",
+        diagram: {
+          nodes: [
+            { id: "r", label: "Report issue", x: 0, y: 50 },
+            { id: "o", label: "Open case", x: 150, y: 50 },
+            { id: "n", label: "Admin notes", x: 300, y: 50 },
+            { id: "e", label: "Evidence", x: 450, y: 50 },
+            { id: "x", label: "Resolved / Suspend", x: 600, y: 50, accent: true },
+          ],
+          edges: [["r","o"],["o","n"],["n","e"],["e","x"]],
+        },
+        tests: [
+          "Report: fake quote · no response · bad behaviour · wrong info · payment · review dispute · fraud",
+          "Admin: open case, notes, request evidence, suspend, hide review, mark resolved",
+        ],
+        appMap: "App: project report → disputes · /admin/disputes",
+      },
+
+      /* ========== MONETISATION ========== */
+      {
+        id: "monetisation",
+        group: "Business",
+        title: "17. Monetisation options",
+        source: "Blueprint §17 — MVP: free customer; lead credits or subscription",
+        subtitle: "Lead credits · Subscription · Commission · Featured · Verification fee",
+        diagram: {
+          nodes: [
+            { id: "a", label: "A. Lead credits", x: 0, y: 20, accent: true },
+            { id: "b", label: "B. Subscription", x: 160, y: 20, accent: true },
+            { id: "c", label: "C. Commission", x: 320, y: 20 },
+            { id: "d", label: "D. Featured", x: 0, y: 110 },
+            { id: "e", label: "E. Verify fee", x: 160, y: 110 },
+            { id: "cust", label: "Customer FREE", x: 320, y: 110, accent: true },
+          ],
+          edges: [["a","cust"],["b","cust"]],
+        },
+        tests: [
+          "Customer side remains free",
+          "Lead credit: buy package → spend on quote/contact",
+          "OR subscription plans Free/Basic/Pro/Premium",
+          "Zero credits blocks quote if monetisation on",
+        ],
+        appMap: "App: /freelancer/lead-credits · /admin/monetisation/settings · subscriptions",
+      },
+      {
+        id: "matching",
+        group: "Business",
+        title: "25–26. Matching & ranking",
+        source: "Blueprint §25–26",
+        subtitle: "Who sees a lead · how providers are ranked",
+        diagram: {
+          nodes: [
+            { id: "req", label: "Request", x: 0, y: 50 },
+            { id: "m", label: "Match rules", x: 150, y: 50, accent: true },
+            { id: "rank", label: "Ranking", x: 320, y: 50, accent: true },
+            { id: "list", label: "Provider feed", x: 480, y: 50 },
+          ],
+          edges: [["req","m"],["m","rank"],["rank","list"]],
+        },
+        extra: `
+          <div class="cols-2">
+            <div class="card"><h3>Match if</h3>
+              <ul class="checklist">
+                <li>Provider active &amp; approved</li>
+                <li>Covers category/subcategory</li>
+                <li>Covers location / shipment route</li>
+                <li>Has lead credits (if required)</li>
+              </ul>
+              <p><strong>Builders:</strong> postcode radius · trade · availability</p>
+              <p><strong>Freight:</strong> origin/dest · service · mode · customs</p>
+            </div>
+            <div class="card"><h3>Rank by</h3>
+              <ul class="checklist">
+                <li>Verification · Rating · Reviews</li>
+                <li>Response speed · Acceptance rate</li>
+                <li>Profile completeness · Distance</li>
+                <li>Subscription / featured (labelled)</li>
+                <li>Admin quality score</li>
+              </ul>
+            </div>
+          </div>`,
+      },
+
+      /* ========== STATUSES ========== */
+      {
+        id: "statuses",
+        group: "Data & statuses",
+        title: "24. Request / Quote / Provider statuses",
+        source: "Blueprint §24 — test checkpoints",
+        subtitle: "State machines for QA",
+        diagram: null,
+        extra: `
+          <div class="card"><h3>Customer request statuses</h3>
+            <p><span class="pill">Draft</span>→<span class="pill">Pending review</span>→<span class="pill">Live</span>→
+            <span class="pill">Paused</span> / <span class="pill">Closed</span> /
+            <span class="pill">Quote accepted</span>→<span class="pill">Completed</span> /
+            <span class="pill">Cancelled</span> / <span class="pill">Expired</span></p>
+          </div>
+          <div class="card"><h3>Quote statuses</h3>
+            <p><span class="pill">Submitted</span>→<span class="pill">Viewed</span>→
+            <span class="pill">Shortlisted</span> / <span class="pill">Revised</span> →
+            <span class="pill">Accepted</span> / <span class="pill">Rejected</span> /
+            <span class="pill">Withdrawn</span> / <span class="pill">Expired</span></p>
+          </div>
+          <div class="card"><h3>Provider statuses</h3>
+            <p><span class="pill">Incomplete profile</span>→<span class="pill">Pending approval</span>→
+            <span class="pill">Active</span> / <span class="pill">Suspended</span> / <span class="pill">Rejected</span></p>
+          </div>
+          <div class="card"><h3>App mapping (Olance/QuoteMatch)</h3>
+            <table>
+              <tr><th>Blueprint</th><th>App approx.</th></tr>
+              <tr><td>Request Live</td><td>Job approved / published</td></tr>
+              <tr><td>Quote Submitted</td><td>Bid pending</td></tr>
+              <tr><td>Shortlisted</td><td>is_shortlist flag</td></tr>
+              <tr><td>Accepted</td><td>Bid accepted + Project running</td></tr>
+              <tr><td>Completed</td><td>Project completed + Job completed</td></tr>
+            </table>
+          </div>`,
+      },
+      {
+        id: "mvp",
+        group: "Data & statuses",
+        title: "18 & 39. MVP scope & acceptance",
+        source: "Blueprint §18, §39, §42",
+        subtitle: "What must work for MVP readiness",
+        diagram: {
+          nodes: [
+            { id: "c", label: "Customer post", x: 0, y: 40 },
+            { id: "p", label: "Provider quote", x: 160, y: 40 },
+            { id: "cmp", label: "Compare", x: 320, y: 40 },
+            { id: "msg", label: "Message", x: 460, y: 40 },
+            { id: "acc", label: "Accept", x: 600, y: 40 },
+            { id: "rev", label: "Review", x: 740, y: 40 },
+          ],
+          edges: [["c","p"],["p","cmp"],["cmp","msg"],["msg","acc"],["acc","rev"]],
+        },
+        tests: [
+          "Customer register + post request",
+          "Provider register + complete profile",
+          "Admin approve provider",
+          "Provider views matching requests + submits quote",
+          "Customer compares quotes + messages + accepts",
+          "Customer leaves review",
+          "Admin manages categories, users, requests, quotes, reviews",
+          "Mobile responsive · basic notifications · secure file access",
+        ],
+        extra: `
+          <div class="card"><h3>MVP should NOT include initially (§18)</h3>
+            <p>Mobile app · Complex escrow · AI matching · Full accounting · Video calls · Advanced disputes · Full commission marketplace payments — add later (Phase 2/3)</p>
+            <p><em>Note: Olance base includes escrow/project payments; treat as optional extension beyond blueprint MVP.</em></p>
+          </div>`,
+      },
+      {
+        id: "milestones",
+        group: "Data & statuses",
+        title: "38. Development milestones",
+        source: "Blueprint §38",
+        subtitle: "Build order for testing phases",
+        diagram: {
+          nodes: [
+            { id: "m1", label: "M1 Plan/Design", x: 0, y: 40 },
+            { id: "m2", label: "M2 Core dashboards", x: 150, y: 40 },
+            { id: "m3", label: "M3 Compare + chat", x: 330, y: 40 },
+            { id: "m4", label: "M4 Trust/verify", x: 510, y: 40 },
+            { id: "m5", label: "M5 QA launch", x: 670, y: 40 },
+            { id: "m6", label: "M6 Monetisation", x: 820, y: 40 },
+          ],
+          edges: [["m1","m2"],["m2","m3"],["m3","m4"],["m4","m5"],["m5","m6"]],
+        },
+        extra: `
+          <div class="card"><h3>Milestone checklist</h3>
+            <table>
+              <tr><th>#</th><th>Includes</th></tr>
+              <tr><td>M1</td><td>Roles, categories, wireframes, DB schema</td></tr>
+              <tr><td>M2</td><td>Auth, 3 dashboards, categories, post request, submit quote</td></tr>
+              <tr><td>M3</td><td>Messaging, comparison table, shortlist/accept/reject, notifications, uploads</td></tr>
+              <tr><td>M4</td><td>Provider profile, docs, admin verify, reviews, reporting</td></tr>
+              <tr><td>M5</td><td>QA, security, mobile, UAT, beta</td></tr>
+              <tr><td>M6</td><td>Stripe, subscriptions, lead credits, featured, billing</td></tr>
+            </table>
+          </div>`,
+      },
+      {
+        id: "smoke",
+        group: "App test URLs",
+        title: "App smoke URLs (QuoteMatch)",
+        source: "Mapped to Laravel Olance implementation of blueprint",
+        subtitle: "Use these to exercise blueprint flows in the running app",
+        diagram: null,
+        urls: [
+          "/", "/post-job", "/freelance-jobs", "/talents", "/categories",
+          "/buyer/login", "/buyer/dashboard", "/buyer/job/post/job-details",
+          "/buyer/job/post/bids", "/buyer/conversation", "/buyer/notifications",
+          "/freelancer/login", "/freelancer/dashboard", "/freelancer/bid/list",
+          "/freelancer/verification", "/freelancer/lead-credits", "/freelancer/conversation",
+          "/admin", "/admin/jobs/pending", "/admin/provider-verifications",
+          "/admin/disputes", "/admin/monetisation/settings",
+        ],
+        extra: `
+          <div class="card"><h3>Naming map</h3>
+            <table>
+              <tr><th>Blueprint term</th><th>App term</th></tr>
+              <tr><td>Customer</td><td>Buyer</td></tr>
+              <tr><td>Service Provider</td><td>Freelancer / User</td></tr>
+              <tr><td>Request</td><td>Job</td></tr>
+              <tr><td>Quote</td><td>Bid</td></tr>
+              <tr><td>Accept quote</td><td>Hire talent</td></tr>
+            </table>
+          </div>`,
+      },
+    ];
+
+    function nodeCenter(n) {
+      return { x: n.x + NODE_W / 2, y: n.y + NODE_H / 2 };
+    }
+
+    function renderDiagram(spec) {
+      if (!spec) return "";
+      const nodes = spec.nodes;
+      const maxX = Math.max(...nodes.map(n => n.x + NODE_W)) + 40;
+      const maxY = Math.max(...nodes.map(n => n.y + NODE_H)) + 40;
+      const byId = Object.fromEntries(nodes.map(n => [n.id, n]));
+      let edgesSvg = "";
+      for (const edge of spec.edges) {
+        const [from, to, label] = edge;
+        const a = nodeCenter(byId[from]);
+        const b = nodeCenter(byId[to]);
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const len = Math.hypot(dx, dy) || 1;
+        const ux = dx / len, uy = dy / len;
+        const x1 = a.x + ux * (NODE_W / 2 + 2);
+        const y1 = a.y + uy * (NODE_H / 2 + 2);
+        const x2 = b.x - ux * (NODE_W / 2 + 6);
+        const y2 = b.y - uy * (NODE_H / 2 + 6);
+        edgesSvg += `<line class="edge" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" marker-end="url(#arrow)"/>`;
+        if (label) {
+          edgesSvg += `<text class="edge" x="${(x1+x2)/2}" y="${(y1+y2)/2 - 6}" text-anchor="middle">${label}</text>`;
+        }
+      }
+      let nodesSvg = "";
+      for (const n of nodes) {
+        const cls = n.accent ? "node accent" : "node";
+        nodesSvg += `<g class="${cls}">
+          <rect x="${n.x}" y="${n.y}" width="${NODE_W}" height="${NODE_H}" rx="6"/>
+          <text x="${n.x + NODE_W/2}" y="${n.y + NODE_H/2 + 4}" text-anchor="middle">${n.label}</text>
+        </g>`;
+      }
+      return `<div class="diagram-wrap">
+        <svg class="diagram" width="${maxX}" height="${maxY}" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="#1f5f8a"/>
+            </marker>
+          </defs>
+          ${edgesSvg}${nodesSvg}
+        </svg>
+      </div>`;
+    }
+
+    function renderPanel(mod) {
+      let html = `<h2>${mod.title}</h2>`;
+      if (mod.subtitle) html += `<p class="subtitle">${mod.subtitle}</p>`;
+      if (mod.source) html += `<div class="source">Source: ${mod.source}</div>`;
+      if (mod.diagram) {
+        html += `<div class="card"><h3>Flow diagram</h3>${renderDiagram(mod.diagram)}</div>`;
+      }
+      if (mod.notes && mod.notes.length) {
+        html += `<div class="card"><h3>Blueprint notes</h3><ul class="checklist">`;
+        mod.notes.forEach(n => { html += `<li>${n}</li>`; });
+        html += `</ul></div>`;
+      }
+      if (mod.tests && mod.tests.length) {
+        html += `<div class="card"><h3>QA checklist (from blueprint)</h3><ol class="checklist">`;
+        mod.tests.forEach(t => { html += `<li>${t}</li>`; });
+        html += `</ol></div>`;
+      }
+      if (mod.appMap) {
+        html += `<div class="card"><h3>App mapping</h3><p>${mod.appMap}</p></div>`;
+      }
+      if (mod.urls && mod.urls.length) {
+        html += `<div class="card urls"><h3>Smoke URLs</h3><p>`;
+        mod.urls.forEach(u => { html += `<code>${u}</code>`; });
+        html += `</p></div>`;
+      }
+      if (mod.extra) html += mod.extra;
+      return html;
+    }
+
+    const nav = document.getElementById("nav");
+    const main = document.getElementById("main");
+    let lastGroup = "";
+    MODULES.forEach((mod, i) => {
+      if (mod.group && mod.group !== lastGroup) {
+        nav.insertAdjacentHTML("beforeend", `<div class="group">${mod.group}</div>`);
+        lastGroup = mod.group;
+      }
+      const btn = document.createElement("button");
+      btn.textContent = mod.title.replace(/^\d+(\.\d+)?\.?\s*/, "").slice(0, 42);
+      btn.title = mod.title;
+      btn.dataset.id = mod.id;
+      btn.addEventListener("click", () => show(mod.id));
+      nav.appendChild(btn);
+      const panel = document.createElement("div");
+      panel.className = "panel" + (i === 0 ? " active" : "");
+      panel.id = "panel-" + mod.id;
+      panel.innerHTML = renderPanel(mod);
+      main.appendChild(panel);
+    });
+
+    function show(id) {
+      document.querySelectorAll("#nav button").forEach(b =>
+        b.classList.toggle("active", b.dataset.id === id));
+      document.querySelectorAll(".panel").forEach(p =>
+        p.classList.toggle("active", p.id === "panel-" + id));
+      location.hash = id;
+    }
+
+    const hash = location.hash.replace("#", "");
+    if (hash && MODULES.some(m => m.id === hash)) show(hash);
+    else show("overview");
+  </script>
+</body>
+</html>

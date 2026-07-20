@@ -19,21 +19,33 @@ Private repo for TheNovasoft. Full app lives under **`Files/`**.
 
 ## Setup (Windows + Laragon)
 
-### 1. Clone
+### 1. Clone (or use existing folder)
 
 ```bash
 cd C:\laragon\www
-git clone https://github.com/TheNovasoft/Qoute-Match.git quotematch
+git clone https://github.com/TheNovasoft/Qoute-Match.git Qoute-Match
 ```
+
+You can name the folder anything (e.g. `Qoute-Match`). There is **no** required folder named `quotematch`.
+
+**If you already have the project** (Codecanyon zip), it may be here:
+
+```
+C:\laragon\www\codecanyon-MNzPySlM-olance-global-freelancing-marketplace\
+```
+
+Use that path instead of `quotematch` in the steps below. The app always lives in **`Files\`** inside the repo root.
 
 You need access to this **private** repo (ask an owner to add you as collaborator).
 
 ### 2. Install PHP packages
 
 ```bash
-cd C:\laragon\www\quotematch\Files\core
+cd C:\laragon\www\Qoute-Match\Files\core
 composer install
 ```
+
+*(Replace `Qoute-Match` with your actual folder name.)*
 
 ### 3. Environment file
 
@@ -45,8 +57,13 @@ php artisan key:generate
 Edit `Files\core\.env` for MySQL (Laragon defaults):
 
 ```env
-APP_NAME=QuoteMatch
-APP_URL=http://quotematch.test
+Set `APP_URL` to whatever Laragon gives you, for example:
+
+```env
+APP_URL=http://codecanyon-MNzPySlM-olance-global-freelancing-marketplace.test
+```
+
+(or `http://Qoute-Match.test` if you cloned with that folder name)
 
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -73,7 +90,7 @@ Or HeidiSQL / phpMyAdmin → import `Files\database\olance.sql`.
 ### 5. Storage link + cache
 
 ```bash
-cd C:\laragon\www\quotematch\Files\core
+cd C:\laragon\www\<your-folder>\Files\core
 php artisan storage:link
 php artisan config:clear
 ```
@@ -83,16 +100,22 @@ php artisan config:clear
 Document root must be the folder that contains `index.php` + `assets` + `build`:
 
 ```
-C:\laragon\www\quotematch\Files
+C:\laragon\www\<your-folder>\Files
 ```
 
-**Laragon:** Menu → Apache/Nginx → create site / virtual host with root = `...\quotematch\Files`.  
-Typical URL: `http://quotematch.test` (match `APP_URL`).
+Example (existing install):
+
+```
+C:\laragon\www\codecanyon-MNzPySlM-olance-global-freelancing-marketplace\Files
+```
+
+**Laragon:** Right-click the project folder → Laragon → **Quick app** (or set vhost root to `...\Files`).  
+Use the `.test` URL Laragon shows and match it in `APP_URL`.
 
 **Quick test without vhost:**
 
 ```bash
-cd C:\laragon\www\quotematch\Files\core
+cd Files\core
 php artisan serve
 ```
 
@@ -103,7 +126,7 @@ Open the URL shown; set `APP_URL` to match.
 `Files\build` is already in the repo. Only rebuild if you change React/JS:
 
 ```bash
-cd C:\laragon\www\quotematch\Files\core
+cd Files\core
 npm install
 npm run build
 ```

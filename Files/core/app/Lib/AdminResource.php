@@ -557,6 +557,8 @@ class AdminResource
                 'jobsCount' => (int) ($cat->jobs_count ?? 0),
                 'requestForm' => $cat->requestForm?->act,
                 'quoteForm' => $cat->quoteForm?->act,
+                'requestFormId' => $cat->request_form_id ? (int) $cat->request_form_id : null,
+                'quoteFormId' => $cat->quote_form_id ? (int) $cat->quote_form_id : null,
                 'status' => self::enableStatus((int) $cat->status),
                 'isFeatured' => (bool) $cat->is_featured,
                 'statusUrl' => route('admin.category.status', $cat->id),
@@ -571,8 +573,14 @@ class AdminResource
         ];
     }
 
-    public static function subcategories(LengthAwarePaginator $paginator, $categories): array
+    public static function subcategories(LengthAwarePaginator $paginator, $categories, $parent = null): array
     {
+        $parentPayload = $parent ? [
+            'id' => (int) $parent->id,
+            'name' => $parent->name,
+            'url' => route('admin.category.subcategories', $parent->id),
+        ] : null;
+
         return [
             'data' => collect($paginator->items())->map(fn (Subcategory $sub) => [
                 'id' => (int) $sub->id,
@@ -587,7 +595,9 @@ class AdminResource
             'links' => $paginator->linkCollection()->toArray(),
             'meta' => self::paginationMeta($paginator),
             'categories' => collect($categories)->map(fn ($c) => ['id' => $c->id, 'name' => $c->name])->values()->all(),
+            'parent' => $parentPayload,
             'createUrl' => route('admin.category.subcategory.store'),
+            'categoriesUrl' => route('admin.category.index'),
         ];
     }
 

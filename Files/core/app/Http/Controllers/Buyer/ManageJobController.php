@@ -370,6 +370,13 @@ class ManageJobController extends Controller
             $adminNotification->title = 'New job posted by ' . $buyer->fullname;
             $adminNotification->click_url = urlPath('admin.jobs.details', $job->id);
             $adminNotification->save();
+
+            $job->loadMissing('buyer');
+            if ((int) $job->is_approved === Status::JOB_APPROVED) {
+                \App\Lib\JobPostNotificationService::notifyApproved($job);
+            } else {
+                \App\Lib\JobPostNotificationService::notifySubmittedForReview($job);
+            }
         }
 
         $notify[] = ['success', $notification];

@@ -103,16 +103,27 @@ class ConfigCategoryController extends Controller
 
     public function subcategories($catId = 0)
     {
-        $pageTitle     = 'All Subcategories';
-        $categories    = Category::active()->orderBy('name')->get();
-        $subcategoryCollection = Subcategory::searchable(['name'])->with('category')->withCount(['jobs' => function ($query) {
-            $query->published()->approved();
-        }]);
-        $subcategoryCollection = $catId ? $subcategoryCollection->where('category_id', $catId) : $subcategoryCollection;
+        $parent = $catId ? Category::findOrFail($catId) : null;
+        $pageTitle = $parent
+            ? 'Subcategories — ' . $parent->name
+            : 'All Subcategories';
+
+        $categories = Category::orderBy('name')->get(['id', 'name']);
+        $subcategoryCollection = Subcategory::searchable(['name'])
+            ->with('category')
+            ->withCount(['jobs' => function ($query) {
+                $query->published()->approved();
+            }]);
+
+        if ($catId) {
+            $subcategoryCollection->where('category_id', $catId);
+        }
+
         $subcategories = $subcategoryCollection->orderBy('id', 'DESC')->paginate(getPaginate());
+
         return Inertia::render('Admin/Categories/Subcategories', [
             'pageTitle' => $pageTitle,
-            'subcategories' => AdminResource::subcategories($subcategories, $categories),
+            'subcategories' => AdminResource::subcategories($subcategories, $categories, $parent),
         ]);
     }
 
@@ -143,6 +154,11 @@ class ConfigCategoryController extends Controller
     public function subcategoryStatus($id)
     {
         return Subcategory::changeStatus($id);
+    }
+
+    public function subcategoryFeature($id)
+    {
+        return Subcategory::changeStatus($id, 'is_featured');
     }
 
     public function skills()

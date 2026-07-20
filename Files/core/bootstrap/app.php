@@ -81,7 +81,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'maintenance' => MaintenanceMode::class,
         ]);
 
-        $middleware->preventRequestForgery(
+        $middleware->validateCsrfTokens(
             except: ['user/deposit', 'ipn*','pusher/auth*']
         );
     })

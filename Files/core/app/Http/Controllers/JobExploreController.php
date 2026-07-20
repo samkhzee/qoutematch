@@ -22,9 +22,12 @@ class JobExploreController extends Controller
 {
     protected function jobQuery()
     {
+        // Public browse: approved + published jobs from non-banned buyers.
+        // Do not require buyer email/SMS verification — guest posters often
+        // remain unverified until they complete account setup.
         return Job::published()->approved()
             ->biddingOpen()
-            ->whereHas('buyer', fn ($query) => $query->active())
+            ->whereHas('buyer', fn ($query) => $query->where('status', Status::USER_ACTIVE))
             ->whereHas('category', fn ($query) => $query->active());
     }
 
@@ -32,7 +35,7 @@ class JobExploreController extends Controller
     {
         return $query->published()->approved()
             ->biddingOpen()
-            ->whereHas('buyer', fn ($q) => $q->active())
+            ->whereHas('buyer', fn ($q) => $q->where('status', Status::USER_ACTIVE))
             ->whereHas('category', fn ($q) => $q->active());
     }
 
@@ -170,7 +173,7 @@ class JobExploreController extends Controller
         $jobSkillIds = $job->skills->pluck('id');
         $similarJobsQuery = Job::published()->approved()->where('slug', '!=', $job->slug)
             ->where('category_id', $job->category_id)->where('subcategory_id', $job->subcategory_id)
-            ->whereHas('buyer', fn ($query) => $query->active())
+            ->whereHas('buyer', fn ($query) => $query->where('status', Status::USER_ACTIVE))
             ->whereHas('category', fn ($query) => $query->active())
             ->when($jobSkillIds->isNotEmpty(), fn ($query) => $query->whereHas(
                 'skills',

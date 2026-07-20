@@ -75,7 +75,6 @@ Route::middleware('admin')->group(function () {
         Route::get('skills', 'skills')->name('skills');
         Route::post('skill-store/{id?}', 'skillStore')->name('skill.store');
         Route::post('skill-status/{id}', 'skillStatus')->name('skill.status');
-        Route::post('skill-feature/{id}', 'skillFeature')->name('skill.feature');
     });
 
 

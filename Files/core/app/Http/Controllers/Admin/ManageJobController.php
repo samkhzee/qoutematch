@@ -108,12 +108,17 @@ class ManageJobController extends Controller
     public function jobApprove($id)
     {
         $job = Job::with('buyer')->findOrFail($id);
+
+        if ((int) $job->status === Status::JOB_DRAFT) {
+            $job->status = Status::JOB_PUBLISH;
+        }
+
         $job->is_approved = Status::JOB_APPROVED;
         $job->save();
-        notify($job->buyer, 'JOB_APPROVED', [
-            'job' => $job->title
-        ]);
-        $notify[] = ['success', 'Job approved successfully'];
+
+        \App\Lib\JobPostNotificationService::notifyApproved($job);
+
+        $notify[] = ['success', 'Job approved successfully. The poster has been emailed and the request is now live on Find Jobs.'];
         return to_route('admin.jobs.approved')->withNotify($notify);
     }
 
@@ -128,10 +133,7 @@ class ManageJobController extends Controller
         $job->rejection_reason = $request->reason;
         $job->save();
 
-        notify($job->buyer, 'JOB_REJECTED', [
-            'job' => $job->title,
-            'reason' => $request->reason
-        ]);
+        \App\Lib\JobPostNotificationService::notifyRejected($job, $request->reason);
 
         $notify[] = ['success', 'Job rejected successfully'];
         return to_route('admin.jobs.rejected')->withNotify($notify);

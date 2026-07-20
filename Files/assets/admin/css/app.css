@@ -9799,6 +9799,65 @@ h6.mb-2 {
   box-shadow: 0 0 0 3px rgba(70, 52, 255, 0.12);
 }
 
+/* WordPress-style category hierarchy */
+.admin-categories--wp .admin-categories__parent {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-categories--wp .admin-categories__sub-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #4634ff;
+  font-weight: 600;
+  font-size: 0.8125rem;
+}
+
+.admin-categories--wp .admin-categories__sub-link:hover {
+  color: #2f22b8;
+  text-decoration: underline;
+}
+
+.admin-categories--wp .admin-categories__sub-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #eef0ff;
+  color: #4634ff;
+  font-weight: 700;
+}
+
+.admin-categories--wp .admin-categories__breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-categories--wp .admin-categories__crumb {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.admin-categories--wp .admin-categories__child-name {
+  color: #475569;
+  padding-left: 4px;
+}
+
+.admin-categories--wp .admin-categories__tree-table tbody tr:hover {
+  background: #f8fafc;
+}
+
 @media (max-width: 991px) {
   .admin-react-sidebar {
     border-right: 0;

@@ -3,11 +3,15 @@
 
 This package includes the application files, pre-built frontend (build/), PHP vendor (core/vendor), and a MySQL dump (database/olance.sql).
 
-1) Copy the Files folder
-------------------------
-Copy this entire "Files" folder into your Laragon web root, for example:
-  C:\laragon\www\quotematch\
-(or rename the folder as you prefer; paths below assume the folder is named Files.)
+1) Project folder (no fixed name)
+---------------------------------
+There is no required folder called "quotematch". Use whatever name you have.
+
+Examples:
+  C:\laragon\www\codecanyon-MNzPySlM-olance-global-freelancing-marketplace\
+  C:\laragon\www\Qoute-Match\
+
+The web app lives in the **Files** subfolder inside that root.
 
 2) MySQL database
 -----------------
@@ -31,8 +35,8 @@ Minimum settings (Laragon defaults):
   DB_USERNAME=root
   DB_PASSWORD=
 
-Set APP_URL to your local URL, for example:
-  APP_URL=http://quotematch.test
+Set APP_URL to your Laragon .test URL, for example:
+  APP_URL=http://codecanyon-MNzPySlM-olance-global-freelancing-marketplace.test
 
 If APP_KEY is empty, from Files\core run:
   php artisan key:generate

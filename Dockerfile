@@ -7,10 +7,10 @@ FROM php:8.3-cli-bookworm
 # System deps + PHP extensions Laravel needs
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git unzip curl libzip-dev libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
-    libonig-dev libxml2-dev libicu-dev \
+    libonig-dev libxml2-dev libicu-dev libgmp-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
-        pdo_mysql mysqli gd zip bcmath intl mbstring exif pcntl opcache \
+        pdo_mysql mysqli gd zip bcmath intl mbstring exif pcntl opcache gmp \
     && rm -rf /var/lib/apt/lists/*
 
 # Composer

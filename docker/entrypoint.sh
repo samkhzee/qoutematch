@@ -3,11 +3,11 @@ set -e
 
 CORE="/app/Files/core"
 ENV_FILE="$CORE/.env"
-PORT="${PORT:-10000}"
+# Railway public HTTP often maps to 8080; use PORT if provided
+PORT="${PORT:-8080}"
 
 cd "$CORE"
 
-# Create .env from example if missing
 if [ ! -f "$ENV_FILE" ]; then
   if [ -f "$CORE/.env.example" ]; then
     cp "$CORE/.env.example" "$ENV_FILE"
@@ -16,18 +16,19 @@ if [ ! -f "$ENV_FILE" ]; then
   fi
 fi
 
-# Map common Render / hosting env vars into .env (overwrite keys if provided)
+# Safer env writer (handles special chars in passwords)
 set_env() {
   local key="$1"
   local val="$2"
   if [ -z "$val" ]; then
     return 0
   fi
-  if grep -q "^${key}=" "$ENV_FILE" 2>/dev/null; then
-    sed -i "s|^${key}=.*|${key}=${val}|" "$ENV_FILE"
-  else
-    echo "${key}=${val}" >> "$ENV_FILE"
+  # Remove existing key lines, then append
+  if [ -f "$ENV_FILE" ]; then
+    grep -v "^${key}=" "$ENV_FILE" > "${ENV_FILE}.tmp" || true
+    mv "${ENV_FILE}.tmp" "$ENV_FILE"
   fi
+  printf '%s=%s\n' "$key" "$val" >> "$ENV_FILE"
 }
 
 set_env "APP_NAME" "${APP_NAME:-QuoteMatch}"
@@ -39,7 +40,6 @@ set_env "SESSION_DRIVER" "${SESSION_DRIVER:-file}"
 set_env "CACHE_STORE" "${CACHE_STORE:-file}"
 set_env "QUEUE_CONNECTION" "${QUEUE_CONNECTION:-sync}"
 
-# Database (MySQL recommended â€” Render free DB is Postgres, so use external MySQL)
 set_env "DB_CONNECTION" "${DB_CONNECTION:-mysql}"
 set_env "DB_HOST" "$DB_HOST"
 set_env "DB_PORT" "${DB_PORT:-3306}"
@@ -47,18 +47,14 @@ set_env "DB_DATABASE" "$DB_DATABASE"
 set_env "DB_USERNAME" "$DB_USERNAME"
 set_env "DB_PASSWORD" "$DB_PASSWORD"
 
-# License (Codecanyon / ViserLab)
 set_env "PURCHASECODE" "$PURCHASECODE"
 
-# Generate APP_KEY if empty
 if ! grep -q "^APP_KEY=base64:" "$ENV_FILE" 2>/dev/null; then
   php artisan key:generate --force || true
 fi
 
-# Permissions
 chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 
-# Clear caches (ignore failures on first boot)
 php artisan config:clear 2>/dev/null || true
 php artisan route:clear 2>/dev/null || true
 php artisan view:clear 2>/dev/null || true

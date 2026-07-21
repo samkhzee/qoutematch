@@ -47,8 +47,6 @@ set_env "DB_DATABASE" "$DB_DATABASE"
 set_env "DB_USERNAME" "$DB_USERNAME"
 set_env "DB_PASSWORD" "$DB_PASSWORD"
 
-set_env "PURCHASECODE" "$PURCHASECODE"
-
 if ! grep -q "^APP_KEY=base64:" "$ENV_FILE" 2>/dev/null; then
   php artisan key:generate --force || true
 fi

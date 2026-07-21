@@ -24,6 +24,7 @@ COPY . /app
 # Install PHP dependencies (vendor is not in git)
 WORKDIR /app/Files/core
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist \
+    && rm -rf vendor/laramin 2>/dev/null || true \
     && mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 

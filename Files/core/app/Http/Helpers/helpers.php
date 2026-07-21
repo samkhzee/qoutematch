@@ -15,7 +15,6 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
-use Laramin\Utility\VugiChugi;
 
 function systemDetails() {
     $system['name']          = 'olance';
@@ -169,16 +168,7 @@ function osBrowser() {
 }
 
 function getTemplates() {
-    $param['purchasecode'] = env("PURCHASECODE");
-    $requestUri            = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
-    $param['website']      = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '' . $requestUri . ' - ' . env("APP_URL");
-    $url                   = VugiChugi::gttmp() . systemDetails()['name'];
-    $response              = CurlRequest::curlPostContent($url, $param);
-    if ($response) {
-        return $response;
-    } else {
-        return null;
-    }
+    return null;
 }
 
 function getPageSections($arr = false) {
